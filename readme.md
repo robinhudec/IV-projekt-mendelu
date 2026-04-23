@@ -13,8 +13,7 @@ xsklensk,xhudec - python(backend)
 
 Postup jednotlivých týmů:
 FRONTEND:
-
-
+- vytvořena základní struktura pro manuální mód
 
 
 BACKEND:
