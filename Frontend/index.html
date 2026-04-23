@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IoT Ovládání</title>
+    <style>
+        body {
+			font-family: Arial;
+			max-width: 800px;
+			margin: 0 auto;
+			padding: 20px;
+		}
+		
+        button {
+			padding: 10px 20px;
+			margin: 5px;
+			font-size: 16px;
+			cursor: pointer;
+		}
+		
+        .rgb-slider {
+			width: 100%;
+			margin: 10px 0;
+		}
+			.color-box {
+			width: 100px;
+			height: 100px;
+			border: 1px solid black;
+			margin: 10px 0;
+		}
+		
+        #temp {
+			font-size: 24px;
+			font-weight: bold;
+		}
+		
+        .card {
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			padding: 15px;
+			margin: 10px 0;
+		}
+
+        .automatic-manual{
+            display: flex;
+            justify-content: center;
+        }
+
+        .button-header{
+            padding: 15px 158px 15px 158px;
+        }
+
+        img{
+            width: 18px;
+        }
+
+        .button-values{
+            display: flex;
+            gap: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>IoT Ovládání</h1>
+    
+    <div class="automatic-manual">
+        <button class="button-header" onclick="">Automatický</button>
+        <button class="button-header" onclick="sendCommand('led/off')">Manuální</button>
+    </div>
+    </div>
+    
+
+    <div class="card">
+        <h2>RGB LED</h2>
+        <div class="color-box" id="rgb-preview"></div>
+        
+        <label>Červená (pin 11): <span id="r-val">0</span></label>
+        <input type="range" class="rgb-slider" id="r-slider" min="0" max="255" value="0">
+        
+        <label>Zelená (pin 10): <span id="g-val">0</span></label>
+        <input type="range" class="rgb-slider" id="g-slider" min="0" max="255" value="0">
+        
+        <label>Modrá (pin 9): <span id="b-val">0</span></label>
+        <input type="range" class="rgb-slider" id="b-slider" min="0" max="255" value="0">
+        
+        <button onclick="sendRGB()">Nastavit barvu</button>
+        <!--<button onclick="resetRGB()">Zapnout</button>-->
+        <button onclick="resetRGB()">Vypnout</button>
+    </div>
+    
+    <div class="card">
+        <h2>Teplota</h2>
+        <p id="temp">--- °C</p>
+        <button class="button-values" onclick="readTemp()"><img src="temperature-high.svg"/> Změřit teplotu</button>
+    </div>
+    
+    <div class="card">
+        <h2>Osvětlení</h2>
+        <p id="temp">--- (jednotka osvětlení)</p>
+        <button class="button-values" onclick="readTemp()"><img src="lightbulb-on.svg"> Změřit světelnost</button>
+    </div>
+    
+    <script>
+        const BACKEND_URL = 'http://localhost:5000';
+        
+        // Kontrola backendu
+        async function checkBackend() {
+            try {
+                const response = await fetch(BACKEND_URL);
+                const data = await response.json();
+                document.getElementById('backend-status').innerHTML = 
+                    `✅ Připojeno (Arduino: ${data.arduino})`;
+            } catch (e) {
+                document.getElementById('backend-status').innerHTML = '❌ Backend neodpovídá';
+            }
+        }
+        
+        // Odeslání příkazu
+        async function sendCommand(endpoint) {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/${endpoint}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                console.log('Odpověď:', data);
+                alert(`Arduino: ${data.arduino_response}`);
+            } catch (e) {
+                alert('Chyba komunikace s backendem');
+            }
+        }
+        
+        // RGB
+        async function sendRGB() {
+            const r = document.getElementById('r-slider').value;
+            const g = document.getElementById('g-slider').value;
+            const b = document.getElementById('b-slider').value;
+            
+            updatePreview(r, g, b);
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/rgb`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({r, g, b})
+                });
+                const data = await response.json();
+                console.log('RGB OK:', data);
+            } catch (e) {
+                alert('Chyba');
+            }
+        }
+        
+        function updatePreview(r, g, b) {
+            document.getElementById('rgb-preview').style.backgroundColor = 
+                `rgb(${r}, ${g}, ${b})`;
+            document.getElementById('r-val').textContent = r;
+            document.getElementById('g-val').textContent = g;
+            document.getElementById('b-val').textContent = b;
+        }
+        
+        // Reset RGB
+        function resetRGB() {
+            document.getElementById('r-slider').value = 0;
+            document.getElementById('g-slider').value = 0;
+            document.getElementById('b-slider').value = 0;
+            updatePreview(0, 0, 0);
+            sendRGB();
+        }
+        
+        // Teplota
+        async function readTemp() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/temp`);
+                const data = await response.json();
+                document.getElementById('temp').innerHTML = 
+                    `${data.temperature} °C`;
+            } catch (e) {
+                alert('Chyba');
+            }
+        }
+        
+        // Vlastní příkaz
+        async function sendCustom() {
+            const cmd = document.getElementById('custom-cmd').value;
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/command`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({cmd})
+                });
+                const data = await response.json();
+                document.getElementById('custom-response').innerHTML = 
+                    `Odpověď: ${data.arduino_response}`;
+            } catch (e) {
+                alert('Chyba');
+            }
+        }
+        
+        // Event listeners pro slidery
+        document.getElementById('r-slider').addEventListener('input', function() {
+            document.getElementById('r-val').textContent = this.value;
+            updatePreview(this.value, 
+                document.getElementById('g-slider').value,
+                document.getElementById('b-slider').value);
+        });
+        
+        document.getElementById('g-slider').addEventListener('input', function() {
+            document.getElementById('g-val').textContent = this.value;
+            updatePreview(
+                document.getElementById('r-slider').value,
+                this.value,
+                document.getElementById('b-slider').value);
+        });
+        
+        document.getElementById('b-slider').addEventListener('input', function() {
+            document.getElementById('b-val').textContent = this.value;
+            updatePreview(
+                document.getElementById('r-slider').value,
+                document.getElementById('g-slider').value,
+                this.value);
+        });
+        
+        // Automatická kontrola při načtení
+        checkBackend();
+    </script>
+</body>
+</html>
