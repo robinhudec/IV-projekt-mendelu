@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>IoT Ovládání</title>
+    <title>IoT Projekt</title>
     <style>
         body {
 			font-family: Arial;
@@ -12,7 +12,6 @@
 		
         button {
 			padding: 10px 20px;
-			margin: 5px;
 			font-size: 16px;
 			cursor: pointer;
 		}
@@ -43,10 +42,17 @@
         .automatic-manual{
             display: flex;
             justify-content: center;
+            width: 100%;
+            gap: 10px;
+            box-sizing: border-box;
         }
 
         .button-header{
-            padding: 15px 158px 15px 158px;
+            flex: 1;
+            min-width: 0;
+            padding: 15px 0;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         img{
@@ -63,13 +69,12 @@
     <h1>IoT Ovládání</h1>
     
     <div class="automatic-manual">
-        <button class="button-header" onclick="">Automatický</button>
-        <button class="button-header" onclick="sendCommand('led/off')">Manuální</button>
-    </div>
+        <button class="button-header" onclick="switchToAutomatic()">Automatický</button>
+        <button class="button-header" onclick="switchToManual()">Manuální</button>
     </div>
     
 
-    <div class="card">
+    <div class="card manual">
         <h2>RGB LED</h2>
         <div class="color-box" id="rgb-preview"></div>
         
@@ -87,16 +92,20 @@
         <button onclick="resetRGB()">Vypnout</button>
     </div>
     
-    <div class="card">
+    <div class="card manual">
         <h2>Teplota</h2>
         <p id="temp">--- °C</p>
         <button class="button-values" onclick="readTemp()"><img src="temperature-high.svg"/> Změřit teplotu</button>
     </div>
     
-    <div class="card">
+    <div class="card manual">
         <h2>Osvětlení</h2>
         <p id="temp">--- (jednotka osvětlení)</p>
         <button class="button-values" onclick="readTemp()"><img src="lightbulb-on.svg"> Změřit světelnost</button>
+    </div>
+
+    <div class="automatic" style="display: none;">
+        <!-- Zde bude obsah pro automatický mód -->
     </div>
     
     <script>
@@ -220,6 +229,20 @@
         });
         
         // Automatická kontrola při načtení
+        
+        
+        // Funkce pro přepínání na manuální mód
+        function switchToManual() {
+            document.querySelectorAll('.manual').forEach(el => el.style.display = 'block');
+            document.querySelectorAll('.automatic').forEach(el => el.style.display = 'none');
+        }
+        
+        // Funkce pro přepínání na automatický mód
+        function switchToAutomatic() {
+            document.querySelectorAll('.manual').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.automatic').forEach(el => el.style.display = 'block');
+        }
+    
         checkBackend();
     </script>
 </body>
