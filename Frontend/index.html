@@ -5,15 +5,35 @@
 <html>
 <head>
     <title>IoT Projekt</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
+        .silkscreen-regular {
+            font-family: "Silkscreen", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        .silkscreen-bold {
+            font-family: "Silkscreen", sans-serif;
+            font-weight: 700;
+            font-style: normal;
+        }
+
         /* ===== ZÁKLADNÍ STYLY =====
          * Nastavení vzhledu celé stránky
+         * Použití importovaného fontu Silkscreen z Google Fonts
          */
         body {
-			font-family: Arial;
+			font-family: "Silkscreen", sans-serif;
 			max-width: 800px;
 			margin: 0 auto;
 			padding: 20px;
+            background-color: rgb(54, 54, 54);
+            color: greenyellow;
 		}
 		
         /* Tlačítka - vzhled a interakce */
@@ -21,7 +41,62 @@
 			padding: 10px 20px;
 			font-size: 16px;
 			cursor: pointer;
+            border-radius: 25px; /* Zaoblené rohy jako u toggle-pill */
+            border: none;
+            background-color: #68dd50;
+            color: rgb(54, 54, 54);
+            font-family: "Silkscreen", sans-serif;
+            transition: all 0.3s ease;
 		}
+		
+        /* Hover efekt pro tlačítka */
+        button:hover {
+            box-shadow: 0 0 15px rgba(104, 221, 80, 0.6);
+            transform: scale(1.02);
+        }
+        
+        /* ===== INPUT POLE =====
+         * Styl pro textová a číselná vstupní pole
+         */
+        input[type="number"],
+        input[type="text"],
+        input[type="range"] {
+            font-family: "Silkscreen", sans-serif;
+        }
+        
+        /* Číselné inputy (pro threshold) */
+        input[type="number"] {
+            padding: 10px 15px;
+            border-radius: 25px;
+            border: 2px solid #68dd50;
+            background-color: rgb(54, 54, 54);
+            color: greenyellow;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        /* Focus stav pro inputy */
+        input[type="number"]:focus {
+            box-shadow: 0 0 15px rgba(104, 221, 80, 0.5);
+        }
+        
+        /* Placeholder text */
+        input[type="number"]::placeholder {
+            color: rgba(173, 255, 47, 0.5);
+        }
+        
+        /* ===== THRESHOLD SEKCE (Automatický režim) ===== */
+        .threshold-input {
+            width: 150px;
+            height: 45px;
+            box-sizing: border-box;
+            vertical-align: middle;
+        }
+        
+        .threshold-save-btn {
+            vertical-align: middle;
+        }
 		
         /* RGB slidery - posuvníky pro výběr barvy */
         .rgb-slider {
@@ -88,64 +163,91 @@
         /* ===== PŘEPÍNAČ REŽIMŮ (MANUÁLNÍ / AUTOMATICKÝ) =====
          * Kontejner pro celý přepínač i s texty
          */
+        /* Kontejner pro vycentrování */
         .mode-switch-container {
             display: flex;
             justify-content: center;
-            align-items: center;
-            gap: 15px;
             margin: 20px 0;
-            font-weight: bold;
         }
 
-        /* Samotný přepínač - zapouzdření */
-        .switch {
+        /* Hlavní obal pilulky */
+        .toggle-pill {
             position: relative;
             display: inline-block;
-            width: 60px;
-            height: 34px;
-        }
-
-        /* Schováme výchozí ošklivý checkbox */
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        /* Pozadí přepínače (kolejnička) */
-        .slider {
-            position: absolute;
+            width: 320px; /* Šířka celého přepínače */
+            height: 50px; /* Výška přepínače */
             cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc; /* Šedá pro manuální mód */
-            transition: .4s;
-            border-radius: 34px;
         }
 
-        /* Kolečko v přepínači */
-        .slider:before {
+        /* Schování defaultního ošklivého čtverečku */
+        .toggle-pill input {
+            display: none;
+        }
+
+        /* Fialové pozadí pilulky */
+        .pill-background {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #68dd50;
+            border-radius: 50px;
+            box-shadow: 0 0 15px rgba(104, 221, 80, 0.5); /* Lehký neonový glow */
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Bílý jezdec (thumb) */
+        .pill-thumb {
             position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
+            top: 5px;
+            left: 5px;
+            width: calc(50% - 5px); /* Zabere polovinu šířky minus okraje */
+            height: calc(100% - 10px);
             background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+            border-radius: 40px;
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 1; /* Musí být pod textem */
         }
 
-        /* Jak to vypadá, když se přepne na Automatický (checked) - Neonový efekt */
-        input:checked + .slider {
-            background-color: #39ff14; /* Zelená neonová pro automatický mód */
-            box-shadow: 0 0 10px #39ff14;
+        /* Obal pro oba texty */
+        .pill-texts {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            z-index: 2; /* Zajišťuje, že text je NAD bílým jezdcem */
+            font-weight: bold;
+            font-size: 16px;
+            user-select: none; /* Aby text nešel nechtěně označit myší */
         }
 
-        /* Pohyb kolečka doprava při aktivaci automatického módu */
-        input:checked + .slider:before {
-            transform: translateX(26px);
+        /* Jednotlivé texty */
+        .text-left, .text-right {
+            width: 50%;
+            text-align: center;
+            transition: color 0.4s; /* Plynulá změna barvy textu */
+        }
+
+        /* VÝCHOZÍ STAV (Manuál aktivní - jezdec je vlevo) */
+        .text-left { color: #68dd50; } /* Zelený text na bílém jezdci */
+        .text-right { color: white; }  /* Bílý text na zeleném pozadí */
+
+        /* PŘEPNUTÝ STAV (Automatika aktivní - jezdec odjede doprava) */
+        input:checked + .pill-background .pill-thumb {
+            transform: translateX(100%); /* Posune jezdce o celou jeho délku doprava */
+        }
+
+        input:checked + .pill-background .text-left {
+            color: white; /* Manuál je teď neaktivní, text je bílý */
+        }
+
+        input:checked + .pill-background .text-right {
+            color: #68dd50; /* Automatika má pod sebou jezdce, text se obarví do zelené */
         }
     </style>
+
+
 </head>
 <body>
     <!-- ===== HLAVIČKA STRÁNKY ===== -->
@@ -157,14 +259,22 @@
          - Vpravo: "Automatický" = systém se řídí sám podle nastavených pravidel
     -->
     <div class="mode-switch-container">
-        <span class="mode-label">Manuální</span>
-        <label class="switch">
-            <input type="checkbox" id="mode-toggle" onchange="handleModeChange()">
-            <span class="slider"></span>
-        </label>
-        <span class="mode-label">Automatický</span>
+    <label class="toggle-pill">
+        <!-- Input je schovaný, ale řídí celou logiku (nechybí autocomplete="off" z minula) -->
+        <input type="checkbox" id="mode-toggle" onchange="handleModeChange()" autocomplete="off">
+        
+        <div class="pill-background">
+            <!-- Toto je ten bílý obdélník, co jezdí zleva doprava -->
+            <div class="pill-thumb"></div>
+            
+            <!-- Samotné texty, které leží nad tím -->
+            <div class="pill-texts">
+                <span class="text-left">Manual</span>
+                <span class="text-right">Automatic</span>
+            </div>
+        </div>
+    </label>
     </div>
-
     <!-- ===== MANUÁLNÍ REŽIM =====
          Sekce viditelné pouze v manuálním režimu
          class="manual" = skryje se při přepnutí na automatický mód
@@ -177,37 +287,37 @@
         <div class="color-box" id="rgb-preview"></div>
         
         <!-- 3 slidery pro výběr barvy (0 = vypnuto, 255 = max) -->
-        <label>Červená (pin 11): <span id="r-val">0</span></label>
+        <label>Red (pin 11): <span id="r-val">0</span></label>
         <input type="range" class="rgb-slider" id="r-slider" min="0" max="255" value="0">
         
-        <label>Zelená (pin 10): <span id="g-val">0</span></label>
+        <label>Green (pin 10): <span id="g-val">0</span></label>
         <input type="range" class="rgb-slider" id="g-slider" min="0" max="255" value="0">
         
-        <label>Modrá (pin 9): <span id="b-val">0</span></label>
+        <label>Blue (pin 9): <span id="b-val">0</span></label>
         <input type="range" class="rgb-slider" id="b-slider" min="0" max="255" value="0">
         
         <!-- Tlačítko pro odeslání barvy na Arduino -->
-        <button onclick="sendRGB()">Nastavit barvu</button>
+        <button onclick="sendRGB()">Set color</button>
         <!-- Tlačítko pro vypnutí LED (nastaví všechny barvy na 0) -->
-        <button onclick="resetRGB()">Vypnout</button>
+        <button onclick="resetRGB()">Turn off</button>
     </div>
     
     <!-- Karta 2: Teplota -->
     <div class="card manual">
-        <h2>Teplota</h2>
+        <h2>Temperature</h2>
         <!-- Zde se zobrazí naměřená teplota -->
         <p id="temp">--- °C</p>
         <!-- Tlačítko pro spuštění měření teploty -->
-        <button class="button-values" onclick="readTemp()"><img src="img/temperature-high.svg"/> Změřit teplotu</button>
+        <button class="button-values" onclick="readTemp()"><img src="img/temperature-high.svg"/> Measure temperature</button>
     </div>
     
     <!-- Karta 3: Osvětlení -->
     <div class="card manual">
-        <h2>Osvětlení</h2>
+        <h2>Lighting</h2>
         <!-- Zde se zobrazí naměřená hodnota osvětlení -->
-        <p id="light">--- (jednotka osvětlení)</p>
+        <p id="light">--- (lux)</p>
         <!-- Tlačítko pro spuštění měření světelnosti -->
-        <button class="button-values" onclick="readLight()"><img src="img/lightbulb-on.svg"> Změřit světelnost</button>
+        <button class="button-values" onclick="readLight()"><img src="img/lightbulb-on.svg"> Measure light intensity</button>
     </div>
 
     <!-- ===== AUTOMATICKÝ REŽIM =====
@@ -219,38 +329,27 @@
 
         <!-- Nastavení prahové hodnoty pro automatické řízení -->
         <section class="card threshold-setting">
-            <h3>Nastavení hranice osvětlení</h3>
+            <h3>Light threshold settings</h3>
             <label style="display: inline;" for="threshold-input">
-                Hranice osvětlení (lux):
+                Light threshold (lux):
             </label>
-            <input
-                style="width: 134.788px; height: 41.6px; box-sizing: border-box; vertical-align: middle;"
-                type="number"
-                id="threshold-input"
-                name="threshold"
-                min="0"
-                max="1000"
-                value="300"
-                placeholder="Hodnota v lux"
-            >
-            <button style="vertical-align: middle;" id="threshold-save-btn" type="button">
-                Uložit hranici
-            </button>
+            <input class="threshold-input" type="number" id="threshold-input" name="threshold" min="0" max="1000" value="300" placeholder="Hodnota v lux">
+            <button class="threshold-save-btn" id="threshold-save-btn" type="button">Save threshold</button>
         </section>
         
         <!-- Zobrazení aktuálních hodnot ze senzorů -->
         <section class="card current-values">
-            <h3>Aktuální hodnoty</h3>
+            <h3>Current values</h3>
             <p>
-                Aktuální teplota:
+                Current temperature:
                 <span id="auto-temp">---</span> °C
             </p>
             <p>
-                Aktuální intenzita osvětlení:
+                Current light intensity:
                 <span id="auto-light">---</span> lux
             </p>
             <p>
-                Stav RGB LED:
+                RGB LED status:
                 <span id="auto-led-status">---</span>
             </p>
         </section>
