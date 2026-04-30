@@ -1,0 +1,92 @@
+{
+  "projekt": {
+    "nazev": "UltraLIGHTdetector 5000",
+    "repozitar": "IV-projekt-mendelu",
+    "predmet": "Internet věcí",
+    "stav": "Etapa 1"
+  },
+  "clenove": [
+    {
+      "jmeno": "xhudec",
+      "role": "Backend / Python"
+    },
+    {
+      "jmeno": "xsklensky",
+      "role": "Backend / Python"
+    },
+    {
+      "jmeno": "xrihackova",
+      "role": "Frontend"
+    },
+    {
+      "jmeno": "xvata",
+      "role": "Frontend"
+    },
+    {
+      "jmeno": "xdvorak3",
+      "role": "Arduino"
+    },
+    {
+      "jmeno": "xkrejci4",
+      "role": "Arduino"
+    }
+  ],
+  "historie": [
+    {
+      "datum": "2026-04-23",
+      "udalost": "Rozdělení týmu",
+      "typ": "organizace",
+      "commit": "a59c3e1"
+    },
+    {
+      "datum": "2026-04-23",
+      "udalost": "Začátek backendu v Pythonu, rozdělení na main.py a server.py. PC  komunikuje s Arduinem.",
+      "typ": "feature",
+      "commit": "53d7ccb"
+    },
+    {
+      "datum": "2026-04-23",
+      "udalost": "Nastřelení struktury README a Etapy 1",
+      "typ": "dokumentace",
+      "commit": "289c9cb"
+    },
+    {
+      "datum": "2026-04-23",
+      "udalost": "Přidání současného stavu pro frontend",
+      "typ": "feature",
+      "commit": "aa117a3"
+    },
+    {
+      "datum": "2026-04-23",
+      "udalost": "Přidána funkce na přepnutí z manuálního do automatického módu a lehké estetické úpravy",
+      "typ": "feature",
+      "commit": "9609d28"
+    },
+    {
+      "datum": "2026-04-23",
+      "udalost": "Přidání složky pro obrázky ve frontendu",
+      "typ": "struktura",
+      "commit": "3da344e"
+    },
+    {
+      "datum": "2026-04-30",
+      "udalost": "Přidání automatické sekce",
+      "typ": "feature",
+      "commit": "00e3ae7"
+    },
+    {
+      "datum": "2026-04-30",
+      "udalost": "Změna ID u osvětlení",
+      "typ": "fix",
+      "commit": "b9e895e"
+    }
+  ],
+  "soubory": [
+    {
+      "cesta": "Backend",
+      "popis": "Backendová část projektu v Pythonu"
+    },
+    {
+      "cesta": "Frontend"
+  ]
+}
