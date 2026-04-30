@@ -105,7 +105,41 @@
     </div>
 
     <div class="automatic" style="display: none;">
-        <!-- Zde bude obsah pro automatický mód -->
+        <p class="active-indicator">Automatický mód aktivní</p>
+        <section class="card threshold-setting">
+            <h3>Nastavení hranice osvětlení</h3>
+            <label style="display: inline;" for="threshold-input">
+                Hranice osvětlení (lux):
+            </label>
+            <input
+                style="width: 134.788px; height: 41.6px; box-sizing: border-box; vertical-align: middle;"
+                type="number"
+                id="threshold-input"
+                name="threshold"
+                min="0"
+                max="1000"
+                value="300"
+                placeholder="Hodnota v lux"
+            >
+            <button style="vertical-align: middle;" id="threshold-save-btn" type="button">
+                Uložit hranici
+            </button>
+        </section>
+        <section class="card current-values">
+            <h3>Aktuální hodnoty</h3>
+            <p>
+                Aktuální teplota:
+                <span id="auto-temp">---</span> °C
+            </p>
+            <p>
+                Aktuální intenzita osvětlení:
+                <span id="auto-light">---</span> lux
+            </p>
+            <p>
+                Stav RGB LED:
+                <span id="auto-led-status">---</span>
+            </p>
+        </section>
     </div>
     
     <script>
