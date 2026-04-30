@@ -53,19 +53,13 @@ def rgb():
     if not data:
         return jsonify({"error": "Chybí JSON"}), 400
 
-    try:
-        r = max(0, min(255, int(data.get('r', 0))))
-        g = max(0, min(255, int(data.get('g', 0))))
-        b = max(0, min(255, int(data.get('b', 0))))
-    except:
-        return jsonify({"error": "Špatné hodnoty"}), 400
+    result = server.nastav_rgb(
+        data.get('r', 0),
+        data.get('g', 0),
+        data.get('b', 0)
+    )
 
-    cmd = f"RGB {r} {g} {b}"
-
-    return jsonify({
-        "rgb": [r, g, b],
-        "response": server.posli_prikaz(cmd)
-    })
+    return jsonify(result)
 
 
 @app.route('/api/temp')
@@ -79,7 +73,20 @@ def temp():
 
     return jsonify({"error": odpoved}), 500
 
+@app.route('/api/light', methods=['GET'])
+def light():
+    svetlo = server.ziskej_svetlo()
 
+    if svetlo is None:
+        return jsonify({
+            "status": "error",
+            "message": "Nepodařilo se přečíst intenzitu světla"
+        }), 500
+
+    return jsonify({
+        "status": "ok",
+        "light": svetlo
+    })
 @app.route('/api/command', methods=['POST'])
 def command():
     data = request.json
