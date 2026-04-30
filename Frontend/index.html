@@ -31,7 +31,12 @@
 			font-size: 24px;
 			font-weight: bold;
 		}
-		
+
+        #light {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
         .card {
 			border: 1px solid #ccc;
 			border-radius: 5px;
@@ -66,63 +71,63 @@
 
 
         /* Kontejner pro celý přepínač i s texty */
-.mode-switch-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    margin: 20px 0;
-    font-weight: bold;
-}
+        .mode-switch-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
 
-/* Samotný přepínač */
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 60px;
-    height: 34px;
-}
+        /* Samotný přepínač */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
 
-/* Schováme výchozí ošklivý checkbox */
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
+        /* Schováme výchozí ošklivý checkbox */
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
 
-/* Pozadí přepínače (kolejnička) */
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #ccc; /* Šedá pro manuální mód */
-    transition: .4s;
-    border-radius: 34px;
-}
+        /* Pozadí přepínače (kolejnička) */
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; /* Šedá pro manuální mód */
+            transition: .4s;
+            border-radius: 34px;
+        }
 
-/* Kolečko v přepínači */
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 26px;
-    width: 26px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
-}
+        /* Kolečko v přepínači */
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
 
-/* Jak to vypadá, když se přepne na Automatický (checked) - Neonový efekt */
-input:checked + .slider {
-    background-color: #39ff14; /* Fialová neonová */
-    box-shadow: 0 0 10px #39ff14;
-}
+        /* Jak to vypadá, když se přepne na Automatický (checked) - Neonový efekt */
+        input:checked + .slider {
+            background-color: #39ff14; /* Fialová neonová */
+            box-shadow: 0 0 10px #39ff14;
+        }
 
-/* Pohyb kolečka doprava */
-input:checked + .slider:before {
-    transform: translateX(26px);
-}
+        /* Pohyb kolečka doprava */
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
     </style>
 </head>
 <body>
@@ -150,7 +155,7 @@ input:checked + .slider:before {
         <label>Modrá (pin 9): <span id="b-val">0</span></label>
         <input type="range" class="rgb-slider" id="b-slider" min="0" max="255" value="0">
         
-        <button onclick="sendCommand()">Nastavit barvu</button>
+        <button onclick="sendRGB()">Nastavit barvu</button>
         <!--<button onclick="resetRGB()">Zapnout</button>-->
         <button onclick="resetRGB()">Vypnout</button>
     </div>
@@ -163,17 +168,12 @@ input:checked + .slider:before {
     
     <div class="card manual">
         <h2>Osvětlení</h2>
-        <p id="temp">--- (jednotka osvětlení)</p>
-        <button class="button-values" onclick="readLight()()"><img src="img/lightbulb-on.svg"> Změřit světelnost</button>
+        <p id="light">--- (jednotka osvětlení)</p>
+        <button class="button-values" onclick="readLight()"><img src="img/lightbulb-on.svg"> Změřit světelnost</button>
     </div>
 
     <div class="automatic" style="display: none;">
-        <!-- Nové tlačítko pro zapnutí/vypnutí -->
-        <button id="toggle-auto-btn" onclick="toggleAutoMode()" style="margin-bottom: 15px;">Zapnout automatiku</button>
-    
-        <!-- Indikátor schováme (display: none) a můžeme mu dát třeba neonově zelenou barvu pro tvůj dark mode -->
-        <p class="active-indicator" id="auto-indicator" style="display: none; color: #39ff14; font-weight: bold;">
-        🟢 Automatický mód je AKTIVNÍ</p>
+
         <section class="card threshold-setting">
             <h3>Nastavení hranice osvětlení</h3>
             <label style="display: inline;" for="threshold-input">
@@ -225,22 +225,8 @@ input:checked + .slider:before {
             }
         }
         
-        // Odeslání příkazu
-        async function sendCommand(endpoint) {
-            try {
-                const response = await fetch(`${BACKEND_URL}/api/${endpoint}`, {
-                    method: 'POST'
-                });
-                const data = await response.json();
-                console.log('Odpověď:', data);
-                alert(`Arduino: ${data.arduino_response}`);
-            } catch (e) {
-                alert('Chyba komunikace s backendem');
-            }
-        }
-        
         // RGB
-        async function sendCommand() {
+        async function sendRGB() {
             const r = document.getElementById('r-slider').value;
             const g = document.getElementById('g-slider').value;
             const b = document.getElementById('b-slider').value;
