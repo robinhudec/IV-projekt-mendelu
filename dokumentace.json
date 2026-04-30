@@ -79,6 +79,11 @@
       "udalost": "Změna ID u osvětlení",
       "typ": "fix",
       "commit": "b9e895e"
+    },
+    {
+    "datum": "2026-04-30",
+    "udalost": "Komunikace backend a arduino přes serial - HURÁ",
+    "typ": "událost"
     }
   ],
   "soubory": [

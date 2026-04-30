@@ -44,6 +44,30 @@ class Server:
         except Exception as e:
             return f"ERROR: {str(e)}"
 
+    def nastav_rgb(self, r, g, b):
+        try:
+            r = max(0, min(255, int(r)))
+            g = max(0, min(255, int(g)))
+            b = max(0, min(255, int(b)))
+        except ValueError:
+            return {
+                "status": "error",
+                "message": "RGB hodnoty musí být čísla"
+            }
+
+        prikaz = f"RGB {r} {g} {b}"
+        print(prikaz)
+        odpoved = self.posli_prikaz(prikaz)
+
+        return {
+            "status": "ok",
+            "rgb": {
+                "r": r,
+                "g": g,
+                "b": b
+            },
+            "arduino_response": odpoved
+        }
     def prepni_rezim(self):
         self.automatic_mode_on = not self.automatic_mode_on
         return self.automatic_mode_on

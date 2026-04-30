@@ -4,6 +4,11 @@ from server import Server
 
 # vytvoření backendu
 server = Server()
+print(server.nastav_rgb(255, 0, 0))   # červená
+print(server.nastav_rgb(0, 255, 0))   # zelená
+print(server.nastav_rgb(0, 0, 255))   # modrá
+
+print(server.posli_prikaz("LIGHT"))   # test čidla
 
 app = Flask(__name__)
 CORS(app)
