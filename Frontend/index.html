@@ -63,16 +63,79 @@
             display: flex;
             gap: 12px;
         }
+
+
+        /* Kontejner pro celý přepínač i s texty */
+.mode-switch-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin: 20px 0;
+    font-weight: bold;
+}
+
+/* Samotný přepínač */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+/* Schováme výchozí ošklivý checkbox */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Pozadí přepínače (kolejnička) */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc; /* Šedá pro manuální mód */
+    transition: .4s;
+    border-radius: 34px;
+}
+
+/* Kolečko v přepínači */
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+/* Jak to vypadá, když se přepne na Automatický (checked) - Neonový efekt */
+input:checked + .slider {
+    background-color: #39ff14; /* Fialová neonová */
+    box-shadow: 0 0 10px #39ff14;
+}
+
+/* Pohyb kolečka doprava */
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
     </style>
 </head>
 <body>
     <h1>IoT Ovládání</h1>
     
-    <div class="automatic-manual">
-        <button class="button-header" onclick="switchToAutomatic()">Automatický</button>
-        <button class="button-header" onclick="switchToManual()">Manuální</button>
+    <div class="mode-switch-container">
+        <span class="mode-label">Manuální</span>
+        <label class="switch">
+            <input type="checkbox" id="mode-toggle" onchange="handleModeChange()">
+            <span class="slider"></span>
+        </label>
+        <span class="mode-label">Automatický</span>
     </div>
-    
 
     <div class="card manual">
         <h2>RGB LED</h2>
@@ -87,7 +150,7 @@
         <label>Modrá (pin 9): <span id="b-val">0</span></label>
         <input type="range" class="rgb-slider" id="b-slider" min="0" max="255" value="0">
         
-        <button onclick="sendRGB()">Nastavit barvu</button>
+        <button onclick="sendCommand()">Nastavit barvu</button>
         <!--<button onclick="resetRGB()">Zapnout</button>-->
         <button onclick="resetRGB()">Vypnout</button>
     </div>
@@ -100,12 +163,17 @@
     
     <div class="card manual">
         <h2>Osvětlení</h2>
-        <p id="light">--- (jednotka osvětlení)</p>
-        <button class="button-values" onclick="readTemp()"><img src="img/lightbulb-on.svg"> Změřit světelnost</button>
+        <p id="temp">--- (jednotka osvětlení)</p>
+        <button class="button-values" onclick="readLight()()"><img src="img/lightbulb-on.svg"> Změřit světelnost</button>
     </div>
 
     <div class="automatic" style="display: none;">
-        <p class="active-indicator">Automatický mód aktivní</p>
+        <!-- Nové tlačítko pro zapnutí/vypnutí -->
+        <button id="toggle-auto-btn" onclick="toggleAutoMode()" style="margin-bottom: 15px;">Zapnout automatiku</button>
+    
+        <!-- Indikátor schováme (display: none) a můžeme mu dát třeba neonově zelenou barvu pro tvůj dark mode -->
+        <p class="active-indicator" id="auto-indicator" style="display: none; color: #39ff14; font-weight: bold;">
+        🟢 Automatický mód je AKTIVNÍ</p>
         <section class="card threshold-setting">
             <h3>Nastavení hranice osvětlení</h3>
             <label style="display: inline;" for="threshold-input">
@@ -172,7 +240,7 @@
         }
         
         // RGB
-        async function sendRGB() {
+        async function sendCommand() {
             const r = document.getElementById('r-slider').value;
             const g = document.getElementById('g-slider').value;
             const b = document.getElementById('b-slider').value;
@@ -220,24 +288,19 @@
                 alert('Chyba');
             }
         }
-        
-        // Vlastní příkaz
-        async function sendCustom() {
-            const cmd = document.getElementById('custom-cmd').value;
+
+        // Svetlo
+        async function readLight() {
             try {
-                const response = await fetch(`${BACKEND_URL}/api/command`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({cmd})
-                });
+                const response = await fetch(`${BACKEND_URL}/api/light`);
                 const data = await response.json();
-                document.getElementById('custom-response').innerHTML = 
-                    `Odpověď: ${data.arduino_response}`;
+                document.getElementById('light').innerHTML = `${data.light} lux`;
             } catch (e) {
-                alert('Chyba');
+                alert('Chyba při čtení světelnosti');
             }
         }
         
+       
         // Event listeners pro slidery
         document.getElementById('r-slider').addEventListener('input', function() {
             document.getElementById('r-val').textContent = this.value;
@@ -277,6 +340,28 @@
             document.querySelectorAll('.automatic').forEach(el => el.style.display = 'block');
         }
     
+        async function handleModeChange() {
+            const toggle = document.getElementById('mode-toggle');
+            
+            // Tohle zařídí změnu vzhledu na tvém frontendu
+            if (toggle.checked) {
+                switchToAutomatic();
+            } else {
+                switchToManual();
+            }
+
+            try {
+                await fetch(`${BACKEND_URL}/api/mode`, {
+                    method: 'POST'
+                });
+                console.log('Backendu odeslán povel ke změně módu');
+            } catch (e) {
+                console.error('Chyba při komunikaci s backendem ohledně módů');
+            }
+        }
+
+        
+
         checkBackend();
     </script>
 </body>
