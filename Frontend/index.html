@@ -1,37 +1,130 @@
 <!DOCTYPE html>
+<!-- ===== STRUKTURA STRÁNKY =====
+     HTML5 dokument pro IoT projekt - webové rozhraní pro ovládání Arduino zařízení
+-->
 <html>
 <head>
     <title>IoT Projekt</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
+        .silkscreen-regular {
+            font-family: "Silkscreen", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        .silkscreen-bold {
+            font-family: "Silkscreen", sans-serif;
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        /* ===== ZÁKLADNÍ STYLY =====
+         * Nastavení vzhledu celé stránky
+         * Použití importovaného fontu Silkscreen z Google Fonts
+         */
         body {
-			font-family: Arial;
+			font-family: "Silkscreen", sans-serif;
 			max-width: 800px;
 			margin: 0 auto;
 			padding: 20px;
+            background-color: rgb(54, 54, 54);
+            color: greenyellow;
 		}
 		
+        /* Tlačítka - vzhled a interakce */
         button {
 			padding: 10px 20px;
 			font-size: 16px;
 			cursor: pointer;
+            border-radius: 25px; /* Zaoblené rohy jako u toggle-pill */
+            border: none;
+            background-color: #68dd50;
+            color: rgb(54, 54, 54);
+            font-family: "Silkscreen", sans-serif;
+            transition: all 0.3s ease;
 		}
 		
+        /* Hover efekt pro tlačítka */
+        button:hover {
+            box-shadow: 0 0 15px rgba(104, 221, 80, 0.6);
+            transform: scale(1.02);
+        }
+        
+        /* ===== INPUT POLE =====
+         * Styl pro textová a číselná vstupní pole
+         */
+        input[type="number"],
+        input[type="text"],
+        input[type="range"] {
+            font-family: "Silkscreen", sans-serif;
+        }
+        
+        /* Číselné inputy (pro threshold) */
+        input[type="number"] {
+            padding: 10px 15px;
+            border-radius: 25px;
+            border: 2px solid #68dd50;
+            background-color: rgb(54, 54, 54);
+            color: greenyellow;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        /* Focus stav pro inputy */
+        input[type="number"]:focus {
+            box-shadow: 0 0 15px rgba(104, 221, 80, 0.5);
+        }
+        
+        /* Placeholder text */
+        input[type="number"]::placeholder {
+            color: rgba(173, 255, 47, 0.5);
+        }
+        
+        /* ===== THRESHOLD SEKCE (Automatický režim) ===== */
+        .threshold-input {
+            width: 150px;
+            height: 45px;
+            box-sizing: border-box;
+            vertical-align: middle;
+        }
+        
+        .threshold-save-btn {
+            vertical-align: middle;
+        }
+		
+        /* RGB slidery - posuvníky pro výběr barvy */
         .rgb-slider {
 			width: 100%;
 			margin: 10px 0;
 		}
-			.color-box {
+		
+        /* Náhledový čtvereček barvy */
+		.color-box {
 			width: 100px;
 			height: 100px;
 			border: 1px solid black;
 			margin: 10px 0;
 		}
 		
+        /* Zobrazení teploty - velký tučný text */
         #temp {
 			font-size: 24px;
 			font-weight: bold;
 		}
-		
+
+        /* Zobrazení osvětlení - velký tučný text */
+        #light {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Karty - kontejnery pro jednotlivé sekce */
         .card {
 			border: 1px solid #ccc;
 			border-radius: 5px;
@@ -39,6 +132,7 @@
 			margin: 10px 0;
 		}
 
+        /* Rozložení tlačítek manuálního/automatického módu */
         .automatic-manual{
             display: flex;
             justify-content: center;
@@ -55,97 +149,221 @@
             box-sizing: border-box;
         }
 
+        /* Ikony - nastavení velikosti */
         img{
             width: 18px;
         }
 
+        /* Rozložení hodnot u tlačítek */
         .button-values{
             display: flex;
             gap: 12px;
         }
+
+        /* ===== PŘEPÍNAČ REŽIMŮ (MANUÁLNÍ / AUTOMATICKÝ) =====
+         * Kontejner pro celý přepínač i s texty
+         */
+        /* Kontejner pro vycentrování */
+        .mode-switch-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        /* Hlavní obal pilulky */
+        .toggle-pill {
+            position: relative;
+            display: inline-block;
+            width: 320px; /* Šířka celého přepínače */
+            height: 50px; /* Výška přepínače */
+            cursor: pointer;
+        }
+
+        /* Schování defaultního ošklivého čtverečku */
+        .toggle-pill input {
+            display: none;
+        }
+
+        /* Fialové pozadí pilulky */
+        .pill-background {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #68dd50;
+            border-radius: 50px;
+            box-shadow: 0 0 15px rgba(104, 221, 80, 0.5); /* Lehký neonový glow */
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Bílý jezdec (thumb) */
+        .pill-thumb {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: calc(50% - 5px); /* Zabere polovinu šířky minus okraje */
+            height: calc(100% - 10px);
+            background-color: white;
+            border-radius: 40px;
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 1; /* Musí být pod textem */
+        }
+
+        /* Obal pro oba texty */
+        .pill-texts {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            z-index: 2; /* Zajišťuje, že text je NAD bílým jezdcem */
+            font-weight: bold;
+            font-size: 16px;
+            user-select: none; /* Aby text nešel nechtěně označit myší */
+        }
+
+        /* Jednotlivé texty */
+        .text-left, .text-right {
+            width: 50%;
+            text-align: center;
+            transition: color 0.4s; /* Plynulá změna barvy textu */
+        }
+
+        /* VÝCHOZÍ STAV (Manuál aktivní - jezdec je vlevo) */
+        .text-left { color: #68dd50; } /* Zelený text na bílém jezdci */
+        .text-right { color: white; }  /* Bílý text na zeleném pozadí */
+
+        /* PŘEPNUTÝ STAV (Automatika aktivní - jezdec odjede doprava) */
+        input:checked + .pill-background .pill-thumb {
+            transform: translateX(100%); /* Posune jezdce o celou jeho délku doprava */
+        }
+
+        input:checked + .pill-background .text-left {
+            color: white; /* Manuál je teď neaktivní, text je bílý */
+        }
+
+        input:checked + .pill-background .text-right {
+            color: #68dd50; /* Automatika má pod sebou jezdce, text se obarví do zelené */
+        }
     </style>
+
+
 </head>
 <body>
+    <!-- ===== HLAVIČKA STRÁNKY ===== -->
     <h1>IoT Ovládání</h1>
     
-    <div class="automatic-manual">
-        <button class="button-header" onclick="switchToAutomatic()">Automatický</button>
-        <button class="button-header" onclick="switchToManual()">Manuální</button>
+    <!-- ===== PŘEPÍNAČ REŽIMŮ =====
+         Zde uživatel přepíná mezi manuálním a automatickým režimem
+         - Vlevo: "Manuální" = ruční ovládání všech prvků
+         - Vpravo: "Automatický" = systém se řídí sám podle nastavených pravidel
+    -->
+    <div class="mode-switch-container">
+    <label class="toggle-pill">
+        <!-- Input je schovaný, ale řídí celou logiku (nechybí autocomplete="off" z minula) -->
+        <input type="checkbox" id="mode-toggle" onchange="handleModeChange()" autocomplete="off">
+        
+        <div class="pill-background">
+            <!-- Toto je ten bílý obdélník, co jezdí zleva doprava -->
+            <div class="pill-thumb"></div>
+            
+            <!-- Samotné texty, které leží nad tím -->
+            <div class="pill-texts">
+                <span class="text-left">Manual</span>
+                <span class="text-right">Automatic</span>
+            </div>
+        </div>
+    </label>
     </div>
+    <!-- ===== MANUÁLNÍ REŽIM =====
+         Sekce viditelné pouze v manuálním režimu
+         class="manual" = skryje se při přepnutí na automatický mód
+    -->
     
-
+    <!-- Karta 1: RGB LED ovládání -->
     <div class="card manual">
         <h2>RGB LED</h2>
+        <!-- Náhledový čtvereček - zobrazuje aktuálně vybranou barvu -->
         <div class="color-box" id="rgb-preview"></div>
         
-        <label>Červená (pin 11): <span id="r-val">0</span></label>
+        <!-- 3 slidery pro výběr barvy (0 = vypnuto, 255 = max) -->
+        <label>Red (pin 11): <span id="r-val">0</span></label>
         <input type="range" class="rgb-slider" id="r-slider" min="0" max="255" value="0">
         
-        <label>Zelená (pin 10): <span id="g-val">0</span></label>
+        <label>Green (pin 10): <span id="g-val">0</span></label>
         <input type="range" class="rgb-slider" id="g-slider" min="0" max="255" value="0">
         
-        <label>Modrá (pin 9): <span id="b-val">0</span></label>
+        <label>Blue (pin 9): <span id="b-val">0</span></label>
         <input type="range" class="rgb-slider" id="b-slider" min="0" max="255" value="0">
         
-        <button onclick="sendRGB()">Nastavit barvu</button>
-        <!--<button onclick="resetRGB()">Zapnout</button>-->
-        <button onclick="resetRGB()">Vypnout</button>
+        <!-- Tlačítko pro odeslání barvy na Arduino -->
+        <button onclick="sendRGB()">Set color</button>
+        <!-- Tlačítko pro vypnutí LED (nastaví všechny barvy na 0) -->
+        <button onclick="resetRGB()">Turn off</button>
     </div>
     
+    <!-- Karta 2: Teplota -->
     <div class="card manual">
-        <h2>Teplota</h2>
+        <h2>Temperature</h2>
+        <!-- Zde se zobrazí naměřená teplota -->
         <p id="temp">--- °C</p>
-        <button class="button-values" onclick="readTemp()"><img src="img/temperature-high.svg"/> Změřit teplotu</button>
+        <!-- Tlačítko pro spuštění měření teploty -->
+        <button class="button-values" onclick="readTemp()"><img src="img/temperature-high.svg"/> Measure temperature</button>
     </div>
     
+    <!-- Karta 3: Osvětlení -->
     <div class="card manual">
-        <h2>Osvětlení</h2>
-        <p id="light">--- (jednotka osvětlení)</p>
-        <button class="button-values" onclick="readTemp()"><img src="img/lightbulb-on.svg"> Změřit světelnost</button>
+        <h2>Lighting</h2>
+        <!-- Zde se zobrazí naměřená hodnota osvětlení -->
+        <p id="light">--- (lux)</p>
+        <!-- Tlačítko pro spuštění měření světelnosti -->
+        <button class="button-values" onclick="readLight()"><img src="img/lightbulb-on.svg"> Measure light intensity</button>
     </div>
 
+    <!-- ===== AUTOMATICKÝ REŽIM =====
+         Sekce viditelné pouze v automatickém režimu
+         class="automatic" = skryje se při přepnutí na manuální mód
+         style="display: none;" = výchozí stav (skryto)
+    -->
     <div class="automatic" style="display: none;">
-        <p class="active-indicator">Automatický mód aktivní</p>
+
+        <!-- Nastavení prahové hodnoty pro automatické řízení -->
         <section class="card threshold-setting">
-            <h3>Nastavení hranice osvětlení</h3>
+            <h3>Light threshold settings</h3>
             <label style="display: inline;" for="threshold-input">
-                Hranice osvětlení (lux):
+                Light threshold (lux):
             </label>
-            <input
-                style="width: 134.788px; height: 41.6px; box-sizing: border-box; vertical-align: middle;"
-                type="number"
-                id="threshold-input"
-                name="threshold"
-                min="0"
-                max="1000"
-                value="300"
-                placeholder="Hodnota v lux"
-            >
-            <button style="vertical-align: middle;" id="threshold-save-btn" type="button">
-                Uložit hranici
-            </button>
+            <input class="threshold-input" type="number" id="threshold-input" name="threshold" min="0" max="1000" value="300" placeholder="Hodnota v lux">
+            <button class="threshold-save-btn" id="threshold-save-btn" type="button">Save threshold</button>
         </section>
+        
+        <!-- Zobrazení aktuálních hodnot ze senzorů -->
         <section class="card current-values">
-            <h3>Aktuální hodnoty</h3>
+            <h3>Current values</h3>
             <p>
-                Aktuální teplota:
+                Current temperature:
                 <span id="auto-temp">---</span> °C
             </p>
             <p>
-                Aktuální intenzita osvětlení:
+                Current light intensity:
                 <span id="auto-light">---</span> lux
             </p>
             <p>
-                Stav RGB LED:
+                RGB LED status:
                 <span id="auto-led-status">---</span>
             </p>
         </section>
     </div>
     
     <script>
+        // ===== KONFIGURACE =====
+        // Adresa backend serveru - komunikační bod mezi frontendem a backendem
         const BACKEND_URL = 'http://localhost:5000';
         
-        // Kontrola backendu
+        // ===== KONTROLA SPOJENÍ =====
+        // Funkce: checkBackend()
+        // Účel: Ověří, zda běží backend a zda je připojeno Arduino
+        // Co dělá: Posílá GET požadavek na root adresu backendu a zobrazí stav připojení
         async function checkBackend() {
             try {
                 const response = await fetch(BACKEND_URL);
@@ -157,21 +375,13 @@
             }
         }
         
-        // Odeslání příkazu
-        async function sendCommand(endpoint) {
-            try {
-                const response = await fetch(`${BACKEND_URL}/api/${endpoint}`, {
-                    method: 'POST'
-                });
-                const data = await response.json();
-                console.log('Odpověď:', data);
-                alert(`Arduino: ${data.arduino_response}`);
-            } catch (e) {
-                alert('Chyba komunikace s backendem');
-            }
-        }
-        
-        // RGB
+        // ===== RGB LED OVLÁDÁNÍ =====
+        // Funkce: sendRGB()
+        // Účel: Odešle nastavené hodnoty RGB (červená, zelená, modrá) na backend
+        // Co dělá: 
+        //   1. Načte hodnoty ze 3 sliderů (0-255)
+        //   2. Aktualizuje náhled barvy na stránce
+        //   3. Odešle POST požadavek na backend /api/rgb
         async function sendRGB() {
             const r = document.getElementById('r-slider').value;
             const g = document.getElementById('g-slider').value;
@@ -192,6 +402,9 @@
             }
         }
         
+        // Funkce: updatePreview(r, g, b)
+        // Účel: Zobrazí náhled vybrané barvy na stránce
+        // Parametry: r, g, b - hodnoty 0-255 pro každou barevnou složku
         function updatePreview(r, g, b) {
             document.getElementById('rgb-preview').style.backgroundColor = 
                 `rgb(${r}, ${g}, ${b})`;
@@ -200,7 +413,9 @@
             document.getElementById('b-val').textContent = b;
         }
         
-        // Reset RGB
+        // Funkce: resetRGB()
+        // Účel: Vypne RGB LED - nastaví všechny barvy na 0
+        // Co dělá: Nastaví slidery na 0, aktualizuje náhled a odešle na backend
         function resetRGB() {
             document.getElementById('r-slider').value = 0;
             document.getElementById('g-slider').value = 0;
@@ -209,7 +424,12 @@
             sendRGB();
         }
         
-        // Teplota
+        // ===== TEPLOMĚR =====
+        // Funkce: readTemp()
+        // Účel: Přečte aktuální teplotu z Arduino senzoru
+        // Co dělá: 
+        //   1. Odešle GET požadavek na backend /api/temp
+        //   2. Zobrazí teplotu na stránce ve formátu "XX °C"
         async function readTemp() {
             try {
                 const response = await fetch(`${BACKEND_URL}/api/temp`);
@@ -220,25 +440,30 @@
                 alert('Chyba');
             }
         }
-        
-        // Vlastní příkaz
-        async function sendCustom() {
-            const cmd = document.getElementById('custom-cmd').value;
+
+        // ===== SVĚTELNÝ SENZOR =====
+        // Funkce: readLight()
+        // Účel: Přečte úroveň osvětlení z Arduino senzoru
+        // Co dělá: 
+        //   1. Odešle GET požadavek na backend /api/light
+        //   2. Zobrazí hodnotu v luxech na stránce
+        async function readLight() {
             try {
-                const response = await fetch(`${BACKEND_URL}/api/command`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({cmd})
-                });
+                const response = await fetch(`${BACKEND_URL}/api/light`);
                 const data = await response.json();
-                document.getElementById('custom-response').innerHTML = 
-                    `Odpověď: ${data.arduino_response}`;
+                document.getElementById('light').innerHTML = `${data.light} lux`;
             } catch (e) {
-                alert('Chyba');
+                alert('Chyba při čtení světelnosti');
             }
         }
         
-        // Event listeners pro slidery
+        // ===== EVENT LISTENERS PRO SLIDERY =====
+        // Co to je: Automatické reakce na pohyb sliderů
+        // Účel: Při každém posunu slideru ihned aktualizovat náhled a hodnotu
+        //   - Když uživatel posune červený slider, hned se aktualizuje náhled barvy
+        //   - Nemusí klikat na tlačítko "Nastavit barvu"
+        
+        // Červený slider
         document.getElementById('r-slider').addEventListener('input', function() {
             document.getElementById('r-val').textContent = this.value;
             updatePreview(this.value, 
@@ -246,6 +471,7 @@
                 document.getElementById('b-slider').value);
         });
         
+        // Zelený slider
         document.getElementById('g-slider').addEventListener('input', function() {
             document.getElementById('g-val').textContent = this.value;
             updatePreview(
@@ -254,6 +480,7 @@
                 document.getElementById('b-slider').value);
         });
         
+        // Modrý slider
         document.getElementById('b-slider').addEventListener('input', function() {
             document.getElementById('b-val').textContent = this.value;
             updatePreview(
@@ -262,21 +489,52 @@
                 this.value);
         });
         
-        // Automatická kontrola při načtení
+        // ===== PŘEPÍNÁNÍ REŽIMŮ =====
+        // Proměnná: mode-toggle (checkbox)
+        // Účel: Uživatel může přepínat mezi manuálním a automatickým režimem
         
-        
-        // Funkce pro přepínání na manuální mód
+        // Funkce: switchToManual()
+        // Účel: Zobrazí manuální ovládací prvky, skryje automatické
         function switchToManual() {
             document.querySelectorAll('.manual').forEach(el => el.style.display = 'block');
             document.querySelectorAll('.automatic').forEach(el => el.style.display = 'none');
         }
         
-        // Funkce pro přepínání na automatický mód
+        // Funkce: switchToAutomatic()
+        // Účel: Zobrazí automatické ovládací prvky, skryje manuální
         function switchToAutomatic() {
             document.querySelectorAll('.manual').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.automatic').forEach(el => el.style.display = 'block');
         }
     
+        // Funkce: handleModeChange()
+        // Účel: Hlavní handler pro přepínání režimů
+        // Co dělá:
+        //   1. Zjistí stav checkboxu (zaškrtnutý = automatický, nezaškrtnutý = manuální)
+        //   2. Přepne zobrazení prvků na stránce
+        //   3. Odešle povel na backend, aby změnil režim
+        async function handleModeChange() {
+            const toggle = document.getElementById('mode-toggle');
+            
+            // Změna vzhledu na frontendu
+            if (toggle.checked) {
+                switchToAutomatic();
+            } else {
+                switchToManual();
+            }
+
+            try {
+                await fetch(`${BACKEND_URL}/api/mode`, {
+                    method: 'POST'
+                });
+                console.log('Backendu odeslán povel ke změně módu');
+            } catch (e) {
+                console.error('Chyba při komunikaci s backendem ohledně módů');
+            }
+        }
+
+        // ===== INICIALIZACE =====
+        // Spustí kontrolu backendu při načtení stránky
         checkBackend();
     </script>
 </body>
