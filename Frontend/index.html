@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-<!-- ===== STRUKTURA STRÁNKY =====
-     HTML5 dokument pro IoT projekt - webové rozhraní pro ovládání Arduino zařízení
--->
+
 <html>
 <head>
     <title>IoT Projekt</title>
@@ -23,10 +21,6 @@
             font-style: normal;
         }
 
-        /* ===== ZÁKLADNÍ STYLY =====
-         * Nastavení vzhledu celé stránky
-         * Použití importovaného fontu Silkscreen z Google Fonts
-         */
         body {
 			font-family: "Silkscreen", sans-serif;
 			max-width: 800px;
@@ -36,12 +30,11 @@
             color: greenyellow;
 		}
 		
-        /* Tlačítka - vzhled a interakce */
         button {
 			padding: 10px 20px;
 			font-size: 16px;
 			cursor: pointer;
-            border-radius: 25px; /* Zaoblené rohy jako u toggle-pill */
+            border-radius: 25px;
             border: none;
             background-color: #68dd50;
             color: rgb(54, 54, 54);
@@ -49,22 +42,17 @@
             transition: all 0.3s ease;
 		}
 		
-        /* Hover efekt pro tlačítka */
         button:hover {
             box-shadow: 0 0 15px rgba(104, 221, 80, 0.6);
             transform: scale(1.02);
         }
         
-        /* ===== INPUT POLE =====
-         * Styl pro textová a číselná vstupní pole
-         */
         input[type="number"],
         input[type="text"],
         input[type="range"] {
             font-family: "Silkscreen", sans-serif;
         }
         
-        /* Číselné inputy (pro threshold) */
         input[type="number"] {
             padding: 10px 15px;
             border-radius: 25px;
@@ -76,17 +64,15 @@
             transition: all 0.3s ease;
         }
         
-        /* Focus stav pro inputy */
         input[type="number"]:focus {
             box-shadow: 0 0 15px rgba(104, 221, 80, 0.5);
         }
         
-        /* Placeholder text */
         input[type="number"]::placeholder {
             color: rgba(173, 255, 47, 0.5);
         }
         
-        /* ===== THRESHOLD SEKCE (Automatický režim) ===== */
+        /* Světelnost sekce (automatický režim)*/
         .threshold-input {
             width: 150px;
             height: 45px;
@@ -98,13 +84,13 @@
             vertical-align: middle;
         }
 		
-        /* RGB slidery - posuvníky pro výběr barvy */
+        /* RGB slidery*/
         .rgb-slider {
 			width: 100%;
 			margin: 10px 0;
 		}
 		
-        /* Náhledový čtvereček barvy */
+        /* Náhledový čtvereček barvy*/
 		.color-box {
 			width: 100px;
 			height: 100px;
@@ -112,13 +98,13 @@
 			margin: 10px 0;
 		}
 		
-        /* Zobrazení teploty - velký tučný text */
+        /* Zobrazení teploty*/
         #temp {
 			font-size: 24px;
 			font-weight: bold;
 		}
 
-        /* Zobrazení osvětlení - velký tučný text */
+        /* Zobrazení osvětlení*/
         #light {
             font-size: 24px;
             font-weight: bold;
@@ -149,7 +135,6 @@
             box-sizing: border-box;
         }
 
-        /* Ikony - nastavení velikosti */
         img{
             width: 18px;
         }
@@ -160,10 +145,7 @@
             gap: 12px;
         }
 
-        /* ===== PŘEPÍNAČ REŽIMŮ (MANUÁLNÍ / AUTOMATICKÝ) =====
-         * Kontejner pro celý přepínač i s texty
-         */
-        /* Kontejner pro vycentrování */
+        /* Switch ražimů (manual / automatic)*/
         .mode-switch-container {
             display: flex;
             justify-content: center;
@@ -174,8 +156,8 @@
         .toggle-pill {
             position: relative;
             display: inline-block;
-            width: 320px; /* Šířka celého přepínače */
-            height: 50px; /* Výška přepínače */
+            width: 320px;
+            height: 50px;
             cursor: pointer;
         }
 
@@ -335,8 +317,7 @@
                 Light threshold (lux):
             </label>
             <input class="threshold-input" type="number" id="threshold-input" name="threshold" min="0" max="1000" value="300" placeholder="Hodnota v lux">
-            <button class="threshold-save-btn" id="threshold-save-btn" type="button">Save threshold</button>
-        </section>
+            <button class="threshold-save-btn" id="threshold-save-btn" type="button" onclick="saveThreshold()">Save threshold</button>        </section>
         
         <!-- Zobrazení aktuálních hodnot ze senzorů -->
         <section class="card current-values">
@@ -457,6 +438,31 @@
                 alert('Chyba při čtení světelnosti');
             }
         }
+
+        // ===== NASTAVENÍ HRANICE OSVĚTLENÍ (čeká na backend) =====
+        // Funkce: saveThreshold()
+        // Účel: Odeslat novou hranici (v luxech) na backend
+        async function saveThreshold() {
+            const thresholdValue = document.getElementById('threshold-input').value;
+            
+            // Pro testování na frontendu:
+            console.log(`Nová hranice připravena k odeslání: ${thresholdValue} lux`);
+            alert(`Hranice uložena: ${thresholdValue} lux`);
+
+            /* ZAKOMENTOVÁNO: Odeslání na backend (Odkomentuj, až se udělá endpoint /api/threshold)
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/threshold`, {// pojmenovat podle backendu
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ threshold: parseInt(thresholdValue) }) //"threshold" musí odpovídat tomu, co je na backendu
+                });
+                const data = await response.json();
+                console.log('Hranice na backendu upravena:', data);
+            } catch (e) {
+                alert('Chyba při ukládání hranice na backend');
+            }
+            */
+        }
         
         // ===== EVENT LISTENERS PRO SLIDERY =====
         // Co to je: Automatické reakce na pohyb sliderů
@@ -507,21 +513,79 @@
             document.querySelectorAll('.manual').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.automatic').forEach(el => el.style.display = 'block');
         }
-    
-        // Funkce: handleModeChange()
+
+
+        // ===== AUTOMATICKÉ AKTUALIZOVÁNÍ V AUTOMATICKÉM REŽIMU =====
+        // Proměnná pro interval auto-mód updatu
+        let autoUpdateInterval = null;
+
+        // Funkce: updateAutoValues()
+        // Účel: V automatickém režimu čte a aktualizuje všechny hodnoty ze senzorů
+        // Co dělá:
+        //   1. Čte teplotu a zobrazí v #auto-temp
+        //   2. Čte osvětlení a zobrazí v #auto-light
+        //   3. Zobrazuje stav LED (poznámka: backend musí mít endpoint pro LED stav)
+        async function updateAutoValues() {
+            // Čtení teploty
+            try {
+                const tempResponse = await fetch(`${BACKEND_URL}/api/temp`);
+                const tempData = await tempResponse.json();
+                if (tempData.temperature !== undefined) {
+                    document.getElementById('auto-temp').innerHTML = tempData.temperature;
+                }
+            } catch (e) {
+                document.getElementById('auto-temp').innerHTML = 'ERROR';
+            }
+
+            // Čtení osvětlení
+            try {
+                const lightResponse = await fetch(`${BACKEND_URL}/api/light`);
+                const lightData = await lightResponse.json();
+                if (lightData.light !== undefined) {
+                    document.getElementById('auto-light').innerHTML = lightData.light;
+                }
+            } catch (e) {
+                document.getElementById('auto-light').innerHTML = 'ERROR';
+            }
+
+            // Poznámka: LED stav bude čten až když backend implementuje endpoint
+            // document.getElementById('auto-led-status').innerHTML = 'ON/OFF';
+        }
+
+        // Funkce: startAutoUpdate()
+        // Účel: Spustí periodické aktualizování hodnot v automatickém režimu
+        // Co dělá: Nastaví interval na aktualizaci každých 2 sekundy
+        function startAutoUpdate() {
+            if (autoUpdateInterval) clearInterval(autoUpdateInterval);
+            autoUpdateInterval = setInterval(updateAutoValues, 2000);
+            updateAutoValues(); // Ihned načíst poprvé
+        }
+
+        // Funkce: stopAutoUpdate()
+        // Účel: Zastaví periodické aktualizování
+        function stopAutoUpdate() {
+            if (autoUpdateInterval) {
+                clearInterval(autoUpdateInterval);
+                autoUpdateInterval = null;
+            }
+        }
+
         // Účel: Hlavní handler pro přepínání režimů
         // Co dělá:
         //   1. Zjistí stav checkboxu (zaškrtnutý = automatický, nezaškrtnutý = manuální)
         //   2. Přepne zobrazení prvků na stránce
         //   3. Odešle povel na backend, aby změnil režim
+        // Teď také spouští/zastavuje auto-update
         async function handleModeChange() {
             const toggle = document.getElementById('mode-toggle');
             
             // Změna vzhledu na frontendu
             if (toggle.checked) {
                 switchToAutomatic();
+                startAutoUpdate(); // Spustit auto-update
             } else {
                 switchToManual();
+                stopAutoUpdate(); // Zastavit auto-update
             }
 
             try {
