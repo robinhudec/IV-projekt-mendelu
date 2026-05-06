@@ -245,6 +245,13 @@
         input:checked + .pill-background .text-right {
             color: #68dd50; /* Automatika má pod sebou jezdce, text se obarví do zelené */
         }
+
+        /* Schová předchozí šipky input spinneru */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
     </style>
 
 
@@ -334,7 +341,12 @@
             <label style="display: inline;" for="threshold-input">
                 Light threshold (lux):
             </label>
-            <input class="threshold-input" type="number" id="threshold-input" name="threshold" min="0" max="1000" value="300" placeholder="Hodnota v lux">
+            <!-- input spinner -->
+            <div style="display: inline-flex; align-items: center; gap: 8px; vertical-align: middle;">
+                <button type="button" onclick="changeThreshold(-1)" style="width: 40px; height: 45px; font-size: 20px; padding: 0; border-radius: 25px;">−</button>
+                <input class="threshold-input" type="number" id="threshold-input" name="threshold" min="0" max="1000" value="300" style="-moz-appearance: textfield; appearance: textfield;">
+                <button type="button" onclick="changeThreshold(1)" style="width: 40px; height: 45px; font-size: 20px; padding: 0; border-radius: 25px;">+</button>
+            </div>
             <button class="threshold-save-btn" id="threshold-save-btn" type="button">Save threshold</button>
         </section>
         
@@ -500,12 +512,44 @@
             document.querySelectorAll('.manual').forEach(el => el.style.display = 'block');
             document.querySelectorAll('.automatic').forEach(el => el.style.display = 'none');
         }
+
+        /*
+        // Upravená funkce kvůli automatickému načítání hodnot
+        function switchToManual() {
+            document.querySelectorAll('.manual').forEach(el => el.style.display = 'block');
+            document.querySelectorAll('.automatic').forEach(el => el.style.display = 'none');
+            // Zastav načítání hodnot
+            if (autoInterval) {
+                clearInterval(autoInterval);
+                autoInterval = null;
+            }
+        }
+        */
         
         // Funkce: switchToAutomatic()
         // Účel: Zobrazí automatické ovládací prvky, skryje manuální
         function switchToAutomatic() {
             document.querySelectorAll('.manual').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.automatic').forEach(el => el.style.display = 'block');
+        }
+
+        /*
+        // Upravená funkce kvůli automatickému načítání hodnot
+        function switchToAutomatic() {
+            document.querySelectorAll('.manual').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.automatic').forEach(el => el.style.display = 'block');
+            // Ihned načti hodnoty a pak každých 5 sekund opakuj
+            updateAutoValues();
+            autoInterval = setInterval(updateAutoValues, 5000);
+        }
+        */
+
+        // Na upravení hodnoty v inputu
+        function changeThreshold(delta) {
+            const input = document.getElementById('threshold-input');
+            let val = parseInt(input.value) || 0;
+            val = Math.min(1000, Math.max(0, val + delta));
+            input.value = val;
         }
     
         // Funkce: handleModeChange()
@@ -532,6 +576,47 @@
             } catch (e) {
                 console.error('Chyba při komunikaci s backendem ohledně módů');
             }
+        }
+
+        // ===== THRESHOLD =====
+        // Odeslání prahové hodnoty na backend po kliknutí na "Save threshold"
+        document.getElementById('threshold-save-btn').addEventListener('click', async function() {
+            const value = document.getElementById('threshold-input').value;
+            try {
+                await fetch(`${BACKEND_URL}/api/threshold`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({threshold: value})
+                });
+                alert('Threshold uložen!');
+            } catch (e) {
+                alert('Chyba při ukládání threshold');
+            }
+        });
+
+        // ===== AUTOMATICKÝ REŽIM - načítání hodnot =====
+        // Proměnná pro uchování intervalu (aby šel zastavit při přepnutí zpět)
+        let autoInterval = null;
+
+        // Načte aktuální hodnoty ze senzorů a zobrazí je
+        async function updateAutoValues() {
+            try {
+                const tempRes = await fetch(`${BACKEND_URL}/api/temp`);
+                const tempData = await tempRes.json();
+                document.getElementById('auto-temp').textContent = tempData.temperature;
+            } catch (e) {}
+
+            try {
+                const lightRes = await fetch(`${BACKEND_URL}/api/light`);
+                const lightData = await lightRes.json();
+                document.getElementById('auto-light').textContent = lightData.light;
+            } catch (e) {}
+
+            try {
+                const ledRes = await fetch(`${BACKEND_URL}/api/led-status`); // Zkontrolovat /api/led-status, aby se shodoval s backendem
+                const ledData = await ledRes.json();
+                document.getElementById('auto-led-status').textContent = ledData.status;
+            } catch (e) {}
         }
 
         // ===== INICIALIZACE =====
