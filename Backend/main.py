@@ -29,6 +29,12 @@ def mode():
     })
 
 
+@app.route('/api/led-status', methods=['GET'])
+def led_status():
+    return jsonify({
+        "status": server.ziskej_svetlo_status()
+    })
+
 @app.route('/api/led/on', methods=['POST'])
 def led_on():
     if server.automatic_mode_on:
@@ -67,16 +73,21 @@ def rgb():
     return jsonify(result)
 
 
-@app.route('/api/temp')
+@app.route('/api/temp', methods=['GET'])
 def temp():
-    odpoved = server.posli_prikaz('TEMP')
+    teplota = server.ziskej_teplotu()
 
-    if odpoved.startswith('TEMP:'):
+    if teplota is None:
         return jsonify({
-            "temperature": float(odpoved[5:])
-        })
+            "status": "error",
+            "message": "Nepodařilo se přečíst intenzitu světla"
+        }), 500
 
-    return jsonify({"error": odpoved}), 500
+    return jsonify({
+        "status": "ok",
+        "temp": teplota
+    })
+
 
 @app.route('/api/light', methods=['GET'])
 def light():
@@ -92,6 +103,47 @@ def light():
         "status": "ok",
         "light": svetlo
     })
+
+from flask import request, jsonify
+
+from flask import request, jsonify
+
+@app.route('/api/threshold', methods=['POST'])
+def threshold():
+    data = request.get_json()
+
+    if data is None:
+        return jsonify({
+            "status": "error",
+            "message": "Nebyl poslán žádný JSON"
+        }), 400
+
+    threshold_value = data.get("threshold")
+
+    if threshold_value is None:
+        return jsonify({
+            "status": "error",
+            "message": "Chybí hodnota threshold"
+        }), 400
+
+    print(threshold_value)
+
+    try:
+        server.set_threshold(threshold_value)
+
+        return jsonify({
+            "status": "ok",
+            "threshold": threshold_value
+        })
+
+    except Exception as e:
+        print("Neco nefunguje s thresholdem:", e)
+
+        return jsonify({
+            "status": "error",
+            "message": "Nepodařilo se nastavit threshold"
+        }), 500
+
 @app.route('/api/command', methods=['POST'])
 def command():
     data = request.json

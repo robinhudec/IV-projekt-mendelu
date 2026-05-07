@@ -15,6 +15,13 @@ class Server:
 
         self.auto_thread = threading.Thread(target=self.auto_mode_loop, daemon=True)
         self.auto_thread.start()
+        self.threshold = 400
+    def set_threshold(self, treshold):
+        if treshold <0:
+            return
+        else:
+            self.threshold = treshold
+
 
     def pripoj_arduino(self):
         try:
@@ -83,28 +90,58 @@ class Server:
 
         if odpoved.startswith("LIGHT:"):
             try:
+                print(odpoved[6:])
                 return int(odpoved[6:])
             except ValueError:
                 return None
 
         return None
+    def ziskej_teplotu(self):
+        odpoved = self.posli_prikaz("TEMP")
+        print("odpoved" + odpoved)
 
+        if odpoved.startswith("teplota: "):
+            try:
+                print("teplotka" + odpoved[9:])
+                return int(odpoved[9:])
+            except ValueError:
+                return None
+
+        return None
+
+    def ziskej_svetlo_status(self):
+        odpoved = self.posli_prikaz("LIGHT")
+
+        if odpoved is None:
+            return None
+
+        odpoved = odpoved.strip().upper()
+
+        if odpoved in ["ON", "LIGHT:ON", "1", "LIGHT:1", "TRUE"]:
+            return "ON"
+
+        if odpoved in ["OFF", "LIGHT:OFF", "0", "LIGHT:0", "FALSE"]:
+            return "OFF"
+
+        return None
     def auto_mode_loop(self):
         while self.running:
             if self.automatic_mode_on:
-                svetlo = self.ziskej_svetlo()
+                print("auto mode loop")
 
+                svetlo = self.ziskej_svetlo()
+                print("testovac"+str(svetlo))
+                print(self.threshold)
+                print("svetlo")
                 if svetlo is not None:
                     print(f"[AUTO] Intenzita světla: {svetlo}")
 
-                    if svetlo < 400:
-                        odpoved = self.posli_prikaz("1")
-                        print(f"[AUTO] Tma → LED ON: {odpoved}")
+                    if svetlo > self.threshold:
+                        self.nastav_rgb(0, 0, 0)
                     else:
-                        odpoved = self.posli_prikaz("0")
-                        print(f"[AUTO] Světlo → LED OFF: {odpoved}")
+                        self.nastav_rgb(255, 255, 255)
                 else:
-                    print("[AUTO] Nepodařilo se přečíst intenzitu světla")
+                    print("[AUTO]  se přečíst intenzitu světla")
 
             time.sleep(1)
 

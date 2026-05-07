@@ -2,42 +2,119 @@
 <html>
 <head>
     <title>IoT Projekt</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
+        .silkscreen-regular {
+            font-family: "Silkscreen", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        .silkscreen-bold {
+            font-family: "Silkscreen", sans-serif;
+            font-weight: 700;
+            font-style: normal;
+        }
+
         body {
-			font-family: Arial;
-			max-width: 800px;
-			margin: 0 auto;
-			padding: 20px;
-		}
-		
+            font-family: "Silkscreen", sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgb(54, 54, 54);
+            color: greenyellow;
+        }
+        
         button {
-			padding: 10px 20px;
-			font-size: 16px;
-			cursor: pointer;
-		}
-		
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 25px;
+            border: none;
+            background-color: #68dd50;
+            color: rgb(54, 54, 54);
+            font-family: "Silkscreen", sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            box-shadow: 0 0 15px rgba(104, 221, 80, 0.6);
+            transform: scale(1.02);
+        }
+        
+        input[type="number"],
+        input[type="text"],
+        input[type="range"] {
+            font-family: "Silkscreen", sans-serif;
+        }
+        
+        input[type="number"] {
+            padding: 10px 15px;
+            border-radius: 25px;
+            border: 2px solid #68dd50;
+            background-color: rgb(54, 54, 54);
+            color: greenyellow;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="number"]:focus {
+            box-shadow: 0 0 15px rgba(104, 221, 80, 0.5);
+        }
+        
+        input[type="number"]::placeholder {
+            color: rgba(173, 255, 47, 0.5);
+        }
+
+        /* Schová předchozí systémové šipky input spinneru */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        /* Světelnost sekce (automatický režim)*/
+        .threshold-input {
+            width: 150px;
+            height: 45px;
+            box-sizing: border-box;
+            vertical-align: middle;
+        }
+        
+        .threshold-save-btn {
+            vertical-align: middle;
+        }
+        
+        /* RGB slidery*/
         .rgb-slider {
-			width: 100%;
-			margin: 10px 0;
-		}
-			.color-box {
-			width: 100px;
-			height: 100px;
-			border: 1px solid black;
-			margin: 10px 0;
-		}
-		
-        #temp {
-			font-size: 24px;
-			font-weight: bold;
-		}
-		
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        /* Náhledový čtvereček barvy*/
+        .color-box {
+            width: 100px;
+            height: 100px;
+            border: 1px solid black;
+            margin: 10px 0;
+        }
+        
+        #temp, #light {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
         .card {
-			border: 1px solid #ccc;
-			border-radius: 5px;
-			padding: 15px;
-			margin: 10px 0;
-		}
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
 
         .automatic-manual{
             display: flex;
@@ -63,81 +140,156 @@
             display: flex;
             gap: 12px;
         }
+
+        /* ===== PŘEPÍNAČ REŽIMŮ (MANUÁLNÍ / AUTOMATICKÝ) ===== */
+        .mode-switch-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .toggle-pill {
+            position: relative;
+            display: inline-block;
+            width: 320px;
+            height: 50px;
+            cursor: pointer;
+        }
+
+        /* Samotný checkbox vůbec nechceme vidět, řídí to jen logiku na pozadí */
+        .toggle-pill input {
+            display: none;
+        }
+
+        .pill-background {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #68dd50;
+            border-radius: 50px;
+            box-shadow: 0 0 15px rgba(104, 221, 80, 0.5);
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .pill-thumb {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: calc(50% - 5px);
+            height: calc(100% - 10px);
+            background-color: white;
+            border-radius: 40px;
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 1;
+        }
+
+        .pill-texts {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            z-index: 2;
+            font-weight: bold;
+            font-size: 16px;
+            user-select: none;
+        }
+
+        .text-left, .text-right {
+            width: 50%;
+            text-align: center;
+            transition: color 0.4s;
+        }
+
+        .text-left { color: #68dd50; } 
+        .text-right { color: white; }  
+
+        /* Pokud je checkbox zaškrtnutý (:checked), najdi třídu .pill-thumb, 
+           která leží hned vedle (+) a posuň ji o 100 % (její délky) doprava. */
+        input:checked + .pill-background .pill-thumb {
+            transform: translateX(100%);
+        }
+
+        input:checked + .pill-background .text-left {
+            color: white; 
+        }
+
+        input:checked + .pill-background .text-right {
+            color: #68dd50; 
+        }
     </style>
 </head>
 <body>
     <h1>IoT Ovládání</h1>
+    <div id="backend-status" style="margin-bottom: 15px; font-weight: bold;"></div>
     
-    <div class="automatic-manual">
-        <button class="button-header" onclick="switchToAutomatic()">Automatický</button>
-        <button class="button-header" onclick="switchToManual()">Manuální</button>
+    <div class="mode-switch-container">
+    <label class="toggle-pill">
+        <input type="checkbox" id="mode-toggle" onchange="handleModeChange()" autocomplete="off">
+        <div class="pill-background">
+            <div class="pill-thumb"></div>
+            <div class="pill-texts">
+                <span class="text-left">Manual</span>
+                <span class="text-right">Automatic</span>
+            </div>
+        </div>
+    </label>
     </div>
     
-
     <div class="card manual">
         <h2>RGB LED</h2>
         <div class="color-box" id="rgb-preview"></div>
         
-        <label>Červená (pin 11): <span id="r-val">0</span></label>
+        <label>Red (pin 11): <span id="r-val">0</span></label>
         <input type="range" class="rgb-slider" id="r-slider" min="0" max="255" value="0">
         
-        <label>Zelená (pin 10): <span id="g-val">0</span></label>
+        <label>Green (pin 10): <span id="g-val">0</span></label>
         <input type="range" class="rgb-slider" id="g-slider" min="0" max="255" value="0">
         
-        <label>Modrá (pin 9): <span id="b-val">0</span></label>
+        <label>Blue (pin 9): <span id="b-val">0</span></label>
         <input type="range" class="rgb-slider" id="b-slider" min="0" max="255" value="0">
         
-        <button onclick="sendRGB()">Nastavit barvu</button>
-        <!--<button onclick="resetRGB()">Zapnout</button>-->
-        <button onclick="resetRGB()">Vypnout</button>
+        <button onclick="sendRGB()">Set color</button>
+        <button onclick="resetRGB()">Turn off</button>
     </div>
     
     <div class="card manual">
-        <h2>Teplota</h2>
+        <h2>Temperature</h2>
         <p id="temp">--- °C</p>
-        <button class="button-values" onclick="readTemp()"><img src="img/temperature-high.svg"/> Změřit teplotu</button>
+        <button class="button-values" onclick="readTemp()"><img src="img/temperature-high.svg"/> Measure temperature</button>
     </div>
     
     <div class="card manual">
-        <h2>Osvětlení</h2>
-        <p id="light">--- (jednotka osvětlení)</p>
-        <button class="button-values" onclick="readTemp()"><img src="img/lightbulb-on.svg"> Změřit světelnost</button>
+        <h2>Lighting</h2>
+        <p id="light">--- (lux)</p>
+        <button class="button-values" onclick="readLight()"><img src="img/lightbulb-on.svg"> Measure light intensity</button>
     </div>
 
     <div class="automatic" style="display: none;">
-        <p class="active-indicator">Automatický mód aktivní</p>
         <section class="card threshold-setting">
-            <h3>Nastavení hranice osvětlení</h3>
+            <h3>Light threshold settings</h3>
             <label style="display: inline;" for="threshold-input">
-                Hranice osvětlení (lux):
+                Light threshold (lux):
             </label>
-            <input
-                style="width: 134.788px; height: 41.6px; box-sizing: border-box; vertical-align: middle;"
-                type="number"
-                id="threshold-input"
-                name="threshold"
-                min="0"
-                max="1000"
-                value="300"
-                placeholder="Hodnota v lux"
-            >
-            <button style="vertical-align: middle;" id="threshold-save-btn" type="button">
-                Uložit hranici
-            </button>
+            <div style="display: inline-flex; align-items: center; gap: 8px; vertical-align: middle;">
+                <button type="button" onclick="changeThreshold(-1)" style="width: 40px; height: 45px; font-size: 20px; padding: 0; border-radius: 25px;">−</button>
+                <input class="threshold-input" type="number" id="threshold-input" name="threshold" min="0" max="1000" value="300" style="-moz-appearance: textfield; appearance: textfield;">
+                <button type="button" onclick="changeThreshold(1)" style="width: 40px; height: 45px; font-size: 20px; padding: 0; border-radius: 25px;">+</button>
+            </div>
+            <button class="threshold-save-btn" id="threshold-save-btn" type="button" onclick="saveThreshold()">Save threshold</button>
         </section>
+        
         <section class="card current-values">
-            <h3>Aktuální hodnoty</h3>
+            <h3>Current values</h3>
             <p>
-                Aktuální teplota:
-                <span id="auto-temp">---</span> °C
+                Current temperature: <span id="auto-temp">---</span> °C
             </p>
             <p>
-                Aktuální intenzita osvětlení:
-                <span id="auto-light">---</span> lux
+                Current light intensity: <span id="auto-light">---</span> lux
             </p>
             <p>
-                Stav RGB LED:
-                <span id="auto-led-status">---</span>
+                RGB LED status: <span id="auto-led-status">---</span>
             </p>
         </section>
     </div>
@@ -145,62 +297,46 @@
     <script>
         const BACKEND_URL = 'http://localhost:5000';
         
-        // Kontrola backendu
+        // ===== KONTROLA SPOJENÍ =====
         async function checkBackend() {
             try {
+                // fetch() se zeptá serveru, await znamená "počkej, dokud nedostaneš odpověď"
                 const response = await fetch(BACKEND_URL);
-                const data = await response.json();
-                document.getElementById('backend-status').innerHTML = 
-                    `✅ Připojeno (Arduino: ${data.arduino})`;
+                const data = await response.json(); // Rozkódujeme odpověď z textu (JSON) na objekt, co umí číst JS
+                document.getElementById('backend-status').innerHTML = `✅ Připojeno (Arduino: ${data.arduino})`;
             } catch (e) {
+                // Kdyby server nejel, fetch spadne a zachytí to catch blok
                 document.getElementById('backend-status').innerHTML = '❌ Backend neodpovídá';
             }
         }
         
-        // Odeslání příkazu
-        async function sendCommand(endpoint) {
-            try {
-                const response = await fetch(`${BACKEND_URL}/api/${endpoint}`, {
-                    method: 'POST'
-                });
-                const data = await response.json();
-                console.log('Odpověď:', data);
-                alert(`Arduino: ${data.arduino_response}`);
-            } catch (e) {
-                alert('Chyba komunikace s backendem');
-            }
-        }
-        
-        // RGB
+        // ===== RGB LED =====
         async function sendRGB() {
             const r = document.getElementById('r-slider').value;
             const g = document.getElementById('g-slider').value;
             const b = document.getElementById('b-slider').value;
             
             updatePreview(r, g, b);
-            
             try {
                 const response = await fetch(`${BACKEND_URL}/api/rgb`, {
-                    method: 'POST',
+                    method: 'POST', // Chceme data ODESÍLAT, proto POST (a ne GET jako u čtení)
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({r, g, b})
+                    body: JSON.stringify({r, g, b}) // Zabalené jako {"r": 255, "g": 0, "b": 0}
                 });
                 const data = await response.json();
                 console.log('RGB OK:', data);
             } catch (e) {
-                alert('Chyba');
+                alert('Chyba při nastavování RGB');
             }
         }
         
         function updatePreview(r, g, b) {
-            document.getElementById('rgb-preview').style.backgroundColor = 
-                `rgb(${r}, ${g}, ${b})`;
+            document.getElementById('rgb-preview').style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
             document.getElementById('r-val').textContent = r;
             document.getElementById('g-val').textContent = g;
             document.getElementById('b-val').textContent = b;
         }
         
-        // Reset RGB
         function resetRGB() {
             document.getElementById('r-slider').value = 0;
             document.getElementById('g-slider').value = 0;
@@ -209,74 +345,149 @@
             sendRGB();
         }
         
-        // Teplota
+        // ===== SENZORY =====
         async function readTemp() {
             try {
                 const response = await fetch(`${BACKEND_URL}/api/temp`);
                 const data = await response.json();
-                document.getElementById('temp').innerHTML = 
-                    `${data.temperature} °C`;
+                document.getElementById('temp').innerHTML = `${data.temperature} °C`;
             } catch (e) {
-                alert('Chyba');
+                alert('Chyba při čtení teploty');
             }
         }
-        
-        // Vlastní příkaz
-        async function sendCustom() {
-            const cmd = document.getElementById('custom-cmd').value;
+
+        async function readLight() {
             try {
-                const response = await fetch(`${BACKEND_URL}/api/command`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({cmd})
-                });
+                const response = await fetch(`${BACKEND_URL}/api/light`);
                 const data = await response.json();
-                document.getElementById('custom-response').innerHTML = 
-                    `Odpověď: ${data.arduino_response}`;
+                document.getElementById('light').innerHTML = `${data.light} lux`;
             } catch (e) {
-                alert('Chyba');
+                alert('Chyba při čtení světelnosti');
             }
         }
-        
-        // Event listeners pro slidery
+
+        // ===== SLIDERY EVENT LISTENERS =====
         document.getElementById('r-slider').addEventListener('input', function() {
             document.getElementById('r-val').textContent = this.value;
-            updatePreview(this.value, 
-                document.getElementById('g-slider').value,
-                document.getElementById('b-slider').value);
+            updatePreview(this.value, document.getElementById('g-slider').value, document.getElementById('b-slider').value);
         });
         
         document.getElementById('g-slider').addEventListener('input', function() {
             document.getElementById('g-val').textContent = this.value;
-            updatePreview(
-                document.getElementById('r-slider').value,
-                this.value,
-                document.getElementById('b-slider').value);
+            updatePreview(document.getElementById('r-slider').value, this.value, document.getElementById('b-slider').value);
         });
         
         document.getElementById('b-slider').addEventListener('input', function() {
             document.getElementById('b-val').textContent = this.value;
-            updatePreview(
-                document.getElementById('r-slider').value,
-                document.getElementById('g-slider').value,
-                this.value);
+            updatePreview(document.getElementById('r-slider').value, document.getElementById('g-slider').value, this.value);
         });
         
-        // Automatická kontrola při načtení
-        
-        
-        // Funkce pro přepínání na manuální mód
+        // ===== PŘEPÍNÁNÍ MÓDŮ =====
         function switchToManual() {
             document.querySelectorAll('.manual').forEach(el => el.style.display = 'block');
             document.querySelectorAll('.automatic').forEach(el => el.style.display = 'none');
         }
         
-        // Funkce pro přepínání na automatický mód
         function switchToAutomatic() {
             document.querySelectorAll('.manual').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.automatic').forEach(el => el.style.display = 'block');
         }
-    
+
+        async function handleModeChange() {
+            const toggle = document.getElementById('mode-toggle');
+            
+            if (toggle.checked) {
+                switchToAutomatic();
+                startAutoUpdate(); 
+            } else {
+                switchToManual();
+                stopAutoUpdate();  
+            }
+
+            try {
+                await fetch(`${BACKEND_URL}/api/mode`, { method: 'POST' });
+                console.log('Backendu odeslán povel ke změně módu');
+            } catch (e) {
+                console.error('Chyba při komunikaci s backendem ohledně módů');
+            }
+        }
+
+        // ===== THRESHOLD LOGIKA =====
+        function changeThreshold(delta) {
+            const input = document.getElementById('threshold-input');
+            let val = parseInt(input.value) || 0; // Kdyby tam uživatel napsal nějakou blbost místo čísla, hodí to 0
+            
+            // Math.max a Math.min tady fungují jako mantinely.
+            // Math.max(0, něco) znamená: vem to číslo, ale nepust mě pod 0.
+            // Math.min(1000, něco) znamená: vem to číslo, ale nepust mě nad 1000.
+            val = Math.min(1000, Math.max(0, val + delta));
+            input.value = val;
+        }
+
+        async function saveThreshold() {
+            const thresholdValue = document.getElementById('threshold-input').value;
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/threshold`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ threshold: parseInt(thresholdValue) })
+                });
+                const data = await response.json();
+                console.log('Hranice na backendu upravena:', data);
+                alert(`Nová hranice úspěšně uložena: ${thresholdValue} lux`);
+            } catch (e) {
+                alert('Chyba při ukládání hranice na backend. Běží backend?');
+            }
+        }
+
+        // ===== AUTOMATICKÝ REŽIM INTERVALY =====
+        let autoUpdateInterval = null;
+
+        async function updateAutoValues() {
+            try {
+                const tempRes = await fetch(`${BACKEND_URL}/api/temp`);
+                const tempData = await tempRes.json();
+                if (tempData.temperature !== undefined) {
+                    document.getElementById('auto-temp').textContent = tempData.temperature;
+                }
+            } catch (e) { document.getElementById('auto-temp').textContent = 'ERROR'; }
+
+            try {
+                const lightRes = await fetch(`${BACKEND_URL}/api/light`);
+                const lightData = await lightRes.json();
+                if (lightData.light !== undefined) {
+                    document.getElementById('auto-light').textContent = lightData.light;
+                }
+            } catch (e) { document.getElementById('auto-light').textContent = 'ERROR'; }
+
+            try {
+                const ledRes = await fetch(`${BACKEND_URL}/api/led-status`); 
+                const ledData = await ledRes.json();
+                if (ledData.status !== undefined) {
+                    document.getElementById('auto-led-status').textContent = ledData.status;
+                }
+            } catch (e) { document.getElementById('auto-led-status').textContent = 'ERROR'; }
+        }
+
+        function startAutoUpdate() {
+            //  Před spuštěním nového intervalu vždycky zabijeme ten starý (pokud nějaký běží).
+            // Jinak by se při překlikávání mohly nastřádat a ptaly by se backendu třeba 10x za vteřinu.
+            if (autoUpdateInterval) clearInterval(autoUpdateInterval);
+            
+            // setInterval je stopky - každých 2000 ms (2 vteřiny) spustí tu funkci updateAutoValues
+            autoUpdateInterval = setInterval(updateAutoValues, 1000);
+            updateAutoValues(); // První načtení dat hned teď (aby uživatel nečekal ty 2 vteřiny na první výpis)
+        }
+
+        function stopAutoUpdate() {
+            //  Když odcházíme do manuálu, musíme stopky vypnout (clearInterval), ať neběží na pozadí
+            if (autoUpdateInterval) {
+                clearInterval(autoUpdateInterval);
+                autoUpdateInterval = null;
+            }
+        }
+
+        // ===== INICIALIZACE =====
         checkBackend();
     </script>
 </body>
