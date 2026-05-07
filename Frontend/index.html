@@ -30,7 +30,7 @@
         }
         
         button {
-            padding: 10px 20px;
+            padding: 12px 20px;
             font-size: 16px;
             cursor: pointer;
             border-radius: 25px;
@@ -203,7 +203,16 @@
         }
 
         .text-left { color: #68dd50; } 
-        .text-right { color: white; }  
+        .text-right { color: white; }
+
+        .plus-minus {
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            padding: 0;
+            border-radius: 25px;
+            padding-bottom: 2px !important;
+        }
 
         /* Pokud je checkbox zaškrtnutý (:checked), najdi třídu .pill-thumb, 
            která leží hned vedle (+) a posuň ji o 100 % (její délky) doprava. */
@@ -273,9 +282,9 @@
                 Light threshold (lux):
             </label>
             <div style="display: inline-flex; align-items: center; gap: 8px; vertical-align: middle;">
-                <button type="button" onclick="changeThreshold(-1)" style="width: 40px; height: 45px; font-size: 20px; padding: 0; border-radius: 25px;">−</button>
+                <button type="button" onclick="changeThreshold(-1)" class="plus-minus">−</button>
                 <input class="threshold-input" type="number" id="threshold-input" name="threshold" min="0" max="1000" value="300" style="-moz-appearance: textfield; appearance: textfield;">
-                <button type="button" onclick="changeThreshold(1)" style="width: 40px; height: 45px; font-size: 20px; padding: 0; border-radius: 25px;">+</button>
+                <button type="button" onclick="changeThreshold(1)" class="plus-minus">+</button>
             </div>
             <button class="threshold-save-btn" id="threshold-save-btn" type="button" onclick="saveThreshold()">Save threshold</button>
         </section>
