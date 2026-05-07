@@ -85,7 +85,7 @@ def temp():
 
     return jsonify({
         "status": "ok",
-        "temp": teplota
+        "temperature": teplota
     })
 
 
